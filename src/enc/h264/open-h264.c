@@ -240,10 +240,17 @@ static int open_h264_resize(struct open_h264_context* self, struct nvnc_frame* f
 {
 	int quality = 51 - round((50.0 / 9.0) * (float)self->parent->quality);
 
+	nvnc_log(NVNC_LOG_DEBUG,
+			"open-h264: creating encoder %dx%d format %.4s quality %d",
+			fb->width, fb->height, (const char*)&fb->fourcc_format,
+			quality);
+
 	struct h264_encoder* encoder = h264_encoder_create(fb->width,
 			fb->height, fb->fourcc_format, quality);
-	if (!encoder)
+	if (!encoder) {
+		nvnc_log(NVNC_LOG_DEBUG, "open-h264: h264_encoder_create failed");
 		return -1;
+	}
 
 	if (self->encoder)
 		h264_encoder_destroy(self->encoder);
@@ -364,7 +371,12 @@ static int open_h264_encode(struct encoder* enc,
 			open_h264_get_context(self, fb->x_off, fb->y_off);
 
 		int rc = open_h264_ctx_encode(ctx, fb);
-		nvnc_assert(rc == 0, "Failed to encode frame");
+		if (rc != 0) {
+			nvnc_log(NVNC_LOG_ERROR,
+					"open-h264: ctx_encode failed at %dx%d+%d+%d",
+					fb->width, fb->height, fb->x_off, fb->y_off);
+			return -1;
+		}
 
 		self->frame_barrier++;
 	}

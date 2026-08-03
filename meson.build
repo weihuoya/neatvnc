@@ -74,6 +74,7 @@ libsixel = dependency('libsixel', required: false)
 libavcodec = dependency('libavcodec', required: get_option('h264'))
 libavfilter = dependency('libavfilter', required: get_option('h264'))
 libavutil = dependency('libavutil', required: get_option('h264'))
+libswscale = dependency('libswscale', required: get_option('h264'))
 
 libpng = dependency('libpng', required: false)
 
@@ -204,7 +205,7 @@ if gbm.found()
 	config.set('HAVE_GBM', true)
 endif
 
-have_ffmpeg = gbm.found() and libdrm.found() and libavcodec.found() and libavfilter.found() and libavutil.found()
+have_ffmpeg = gbm.found() and libdrm.found() and libavcodec.found() and libavfilter.found() and libavutil.found() and libswscale.found()
 have_v4l2 = gbm.found() and libdrm.found() and cc.check_header('linux/videodev2.h')
 
 if have_ffmpeg
@@ -214,7 +215,8 @@ if have_ffmpeg
 			libdrm,
 			libavcodec,
 			libavfilter,
-			libavutil
+			libavutil,
+			libswscale,
 		]
 	)
 	dependencies += h264_ffmpeg_impl
